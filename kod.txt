@@ -1,0 +1,32 @@
+DATA 1000 "kaynak.txt"
+DATA 2000 "cikti.bin"
+
+@BASLA
+SAKLA #-1 #500
+
+; Kaynak dosyayı aç (okuma)
+YUKLE #1000
+INT #30
+
+; Çıktı dosyasını aç (yazma)
+YUKLE #2000
+INT #32
+
+@OKU_DONGUSU
+INT #31
+SAKLA_CEBI #501
+
+; EOF kontrolü
+EGER_ESITSE #500 $BITTI
+
+; Hem ekrana hem dosyaya yaz
+GETIR #501
+INT #20
+GETIR #501
+INT #33
+
+GIT $OKU_DONGUSU
+
+@BITTI
+INT #34
+BITIR
