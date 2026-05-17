@@ -6,7 +6,6 @@
 > 10. sınıf öğrencisi tarafından sıfırdan geliştirildi. Termux'ta. Telefondan.
 > 
 > 
-
 ---
 
 ## 🚀 Büyük Başarı: Gerçek Donanım ve Bootloader
