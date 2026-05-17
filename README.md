@@ -251,5 +251,3 @@ Türkiye'de yazılım geliştirmenin önündeki engellerden biri İngilizce teri
 **Sıfırdan. Telefonda. Termux'ta.**
 
 ---
-
-Nasıl oldu? İstediğin gibi derli toplu duruyor mu?
