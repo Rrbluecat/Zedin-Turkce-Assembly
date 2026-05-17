@@ -1,3 +1,4 @@
+---
 # Zedin Türkçe Assembly ve VM
 
 **Türkçe komut setli, bytecode VM'li, kendi assembler ve linker'ına sahip işletim sistemi dili**
@@ -5,6 +6,16 @@
 > 10. sınıf öğrencisi tarafından sıfırdan geliştirildi. Termux'ta. Telefondan.
 > 
 > 
+
+---
+
+## 🚀 Büyük Başarı: Gerçek Donanım ve Bootloader
+
+Zedin artık sadece bir sanal makine simülasyonu değil, doğrudan donanıma hükmeden bir işletim sistemi çekirdeğidir.
+
+* **SeaBIOS Devre Dışı:** Bilgisayar açıldığı anda kontrolü SeaBIOS'tan alır ve kendi Türkçe mimarisini yükler.
+* **VGA Grafik Modu:** Donanım seviyesinde grafik moduna geçerek pikselleri ve metinleri tamamen kendi komutlarıyla yönetir.
+* **Bağımsızlık:** Hiçbir yabancı Assembly dili veya hazır kütüphane kullanmadan, tamamen Türkçe komutlarla donanım üzerinde çalışır.
 
 ---
 
@@ -46,20 +57,20 @@ BITIR
 
 ## Araç Zinciri
 
-* **Sanal Makine:** `kaynak.zed` → `[zed_as]` → `program.bin` → `[oz-islemci]` → **Çalışır**
-* **Modüler Yapı:** `modul1.zed` + `modul2.zed` + `modul3.zed` → `[zed_link]` → `birlesik.bin` → `[oz-islemci]`
-* **Donanım Hattı:** `kaynak.zed` → `[zederleyici.py]` → `çekirdek.bin` + `[onyukleyici.asm]` → `tam_zedos.img` → **Gerçek Donanım**
+* **Sanal Makine Modu:** `kaynak.zed` → `[zed_as]` → `program.bin` → `[oz-islemci]` → **Çalışır**
+* **Donanım (Bootloader) Modu:** `kaynak.zed` → `[zederleyici.py]` → `çekirdek.bin` + `[onyukleyici.asm]` → `tam_zedos.img` → **Gerçek Donanım**
 
 ---
 
 ## Kurulum
 
 ```bash
+# Sanal Makine Araçları
 gcc -Wall -o oz-islemci oz-islemci.c
 gcc -Wall -o zed_as zed_as.c
 gcc -Wall -o zed_link zed_link.c
 
-# Bootloader Derleme
+# Donanım (Bootloader) Motoru
 nasm -f bin onyukleyici.asm -o zedos.bin
 
 ```
@@ -70,27 +81,23 @@ nasm -f bin onyukleyici.asm -o zedos.bin
 
 ## Kullanım
 
-### Kaynak Kodu Derle
+### 1. Sanal Makine Üzerinde Çalıştırma
 
-`./zed_as program.zed program.bin`
+* **Derle:** `./zed_as program.zed program.bin`
+* **Çalıştır:** `./oz-islemci -calistir program.bin`
 
-### Binary Çalıştır
+### 2. Gerçek Donanım (Bootloader) Üzerinde Çalıştırma
 
-`./oz-islemci -calistir program.bin`
-
-### Debug Modda Çalıştır
-
-`./oz-islemci -calistir program.bin -d`
-
-### Çoklu Modül Linkle
-
-`./zed_link cikti.bin modul1.zed modul2.zed`
-
-### Donanım (Bootloader) Testi
+Bu modda sistem bilgisayarın açılış sektörüne yazılır ve SeaBIOS'tan sonra doğrudan çalışır:
 
 ```bash
+# 1. Türkçe kaynak kodunu donanım için derle
 python3 zederleyici.py
+
+# 2. Donanım motoru (ZedinVM) ile derlenen kodu birleştir
 cat zedos.bin cekirdek.bin > tam_zedos.img
+
+# 3. Gerçek donanımda veya QEMU'da ateşle
 qemu-system-x86_64 -drive format=raw,file=tam_zedos.img
 
 ```
