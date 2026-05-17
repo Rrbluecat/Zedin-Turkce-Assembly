@@ -3,6 +3,8 @@
 **Türkçe komut setli, bytecode VM'li, kendi assembler ve linker'ına sahip işletim sistemi dili**
 
 > 10. sınıf öğrencisi tarafından sıfırdan geliştirildi. Termux'ta. Telefondan.
+> 
+> 
 
 ---
 
@@ -24,7 +26,7 @@ Dosya uzantısı: `.zed`
 ## Özellikler
 
 | Özellik | Durum | Açıklama |
-|---------|-------|----------|
+| --- | --- | --- |
 | 🇹🇷 Türkçe Komut Seti | ✅ | YUKLE, SAKLA, TOPLA, CIKAR, GIT, EGER_ESITSE... |
 | ⚡ Bytecode VM | ✅ | .zed → .bin → çalıştır |
 | 🔧 Türkçe Assembler | ✅ | zed_as: kaynak → binary |
@@ -33,14 +35,18 @@ Dosya uzantısı: `.zed`
 | 🖥️ Kernel | ✅ | Türkçe komut satırı çekirdeği |
 | 📦 Binary Format | ✅ | ZED magic number ile doğrulamalı .bin formatı |
 | 🔄 Program Yükleme | ✅ | Kernel içinden program çalıştırma ve geri dönme |
+| 🚀 **Donanım Boot** | ✅ | **SeaBIOS sonrası doğrudan donanım (x86) kontrolü** |
 
 ---
 
 ## Araç Zinciri
+
 kaynak.zed → [zed_as] → program.bin → [oz-islemci] → çalışır
 modul1.zed
 modul2.zed → [zed_link] → birlesik.bin → [oz-islemci] → çalışır
 modul3.zed
+**Donanım Hattı:** kaynak.zed → [zederleyici.py] → çekirdek.bin + [onyukleyici.asm] → tam_zedos.img → **Gerçek Donanım**
+
 ---
 
 ## Kurulum
@@ -49,117 +55,151 @@ modul3.zed
 gcc -Wall -o oz-islemci oz-islemci.c
 gcc -Wall -o zed_as zed_as.c
 gcc -Wall -o zed_link zed_link.c
+# Bootloader Derleme
+nasm -f bin onyukleyici.asm -o zedos.bin
+
+```
+
 Linux, Ubuntu ve Termux (Android) üzerinde test edildi.
 Kullanım
+
 # Kaynak kodu derle
+
 ./zed_as program.zed program.bin
 
 # Binary çalıştır
+
 ./oz-islemci -calistir program.bin
 
 # Debug modda çalıştır
+
 ./oz-islemci -calistir program.bin -d
 
 # Çoklu modül linkle
+
 ./zed_link cikti.bin modul1.zed modul2.zed
 
 # Direkt kaynak çalıştır
+
 ./oz-islemci
+
+# Donanım (Bootloader) Testi
+
+python3 zederleyici.py
+cat zedos.bin cekirdek.bin > tam_zedos.img
+qemu-system-x86_64 -drive format=raw,file=tam_zedos.img
+
 Kernel
 ZedinVM'in çekirdeği Türkçe assembly ile yazılmıştır.
 ./zed_as kernel.zed kernel.bin
 ./oz-islemci -calistir kernel.bin
 --- OZ-ISLEMCI v32.1 ---
 ZED_OS_v1.0
->> yardim
-Komutlar:_calistir_yardim_temizle_surum_cikis
->> surum
-ZED_OS_v1.0_-_Surum:_1.0
->> calistir
-Dosya_adi: program.bin
-...
->> temizle
->> cikis
-Kernel Komutları
-Komut
-Açıklama
-calistir
-Program yükle ve çalıştır
-yardim
-Komut listesini göster
-temizle
-Ekranı temizle
-surum
-Versiyon bilgisini göster
-cikis
-Sistemi kapat
-Komut Seti
-Komut
-Boyut
-Açıklama
-YUKLE #deger
-2
-CEB'e değer yükle
-SAKLA #deger #adres
-3
-RAM'e yaz
-GETIR #adres
-2
-RAM'den oku
-SAKLA_CEBI #adres
-2
-CEB'i RAM'e yaz
-TOPLA #deger
-2
-CEB += deger
-CIKAR #deger
-2
-CEB -= deger
-CARP #deger
-2
-CEB *= deger
-BOL #deger
-2
-CEB /= deger
-MOD #deger
-2
-CEB %= deger
-GIT $etiket
-2
-Etiket adresine atla
-EGER_ESITSE #adres $etiket
-3
-CEB == RAM[adres] ise atla
-EGER_DEGILSE #adres $etiket
-3
-CEB != RAM[adres] ise atla
-BUYUKSE #adres $etiket
-3
-CEB > RAM[adres] ise atla
-KUCUKSE #adres $etiket
-3
-CEB < RAM[adres] ise atla
-PUSH #deger
-2
-Stack'e it
-POP
-1
-Stack'ten al
-CALL $etiket
-2
-Fonksiyon çağır
-RET
-1
-Fonksiyondan dön
-INT #kesme
-2
-Sistem kesmesi
-YAZDIR
-1
-CEB'i ekrana bas
-BITIR
-1
-Programı durdur
+
+> > yardim
+> > Komutlar:*calistir_yardim_temizle_surum_cikis
+> > surum
+> > ZED_OS_v1.0*-_Surum:_1.0
+> > calistir
+> > Dosya_adi: program.bin
+> > ...
+> > temizle
+> > cikis
+> > Kernel Komutları
+> > Komut
+> > Açıklama
+> > calistir
+> > Program yükle ve çalıştır
+> > yardim
+> > Komut listesini göster
+> > temizle
+> > Ekranı temizle
+> > surum
+> > Versiyon bilgisini göster
+> > cikis
+> > Sistemi kapat
+> > Komut Seti
+> > Komut
+> > Boyut
+> > Açıklama
+> > YUKLE #deger
+> > 2
+> > CEB'e değer yükle
+> > SAKLA #deger #adres
+> > 3
+> > RAM'e yaz
+> > GETIR #adres
+> > 2
+> > RAM'den oku
+> > SAKLA_CEBI #adres
+> > 2
+> > CEB'i RAM'e yaz
+> > TOPLA #deger
+> > 2
+> > CEB += deger
+> > CIKAR #deger
+> > 2
+> > CEB -= deger
+> > CARP #deger
+> > 2
+> > CEB *= deger
+> > BOL #deger
+> > 2
+> > CEB /= deger
+> > MOD #deger
+> > 2
+> > CEB %= deger
+> > GIT $etiket
+> > 2
+> > Etiket adresine atla
+> > EGER_ESITSE #adres $etiket
+> > 3
+> > CEB == RAM[adres] ise atla
+> > EGER_DEGILSE #adres $etiket
+> > 3
+> > CEB != RAM[adres] ise atla
+> > BUYUKSE #adres $etiket
+> > 3
+> > CEB > RAM[adres] ise atla
+> > KUCUKSE #adres $etiket
+> > 3
+> > CEB < RAM[adres] ise atla
+> > PUSH #deger
+> > 2
+> > Stack'e it
+> > POP
+> > 1
+> > Stack'ten al
+> > CALL $etiket
+> > 2
+> > Fonksiyon çağır
+> > RET
+> > 1
+> > Fonksiyondan dön
+> > INT #kesme
+> > 2
+> > Sistem kesmesi
+> > YAZDIR
+> > 1
+> > CEB'i ekrana bas
+> > BITIR
+> > 1
+> > Programı durdur
+> > **AKTAR Yazmac, #deger**
+> > 3
+> > Donanım yazmacına (Y1-Y4) değer yükle
+> > **FONK #no**
+> > 2
+> > Donanım fonksiyonu (Grafik, Yazı)
+> > **ZIPLA $adres**
+> > 2
+> > Kod içinde adrese atla (Donanım)
+> > **DUR**
+> > 1
+> > İşlemciyi durdur (HLT)
+> 
+> 
+
 Kesme Tablosu (INT)
 Kesme
 Açıklama
@@ -231,10 +271,11 @@ Yol Haritası
 [x] libZED standart kütüphane
 [x] Kernel v1.0
 [x] Program yükleme ve çalıştırma (INT #50)
+[x] **Gerçek donanım desteği (x86 Bootloader)**
+[x] **VGA Grafik ve Metin motoru**
 [ ] Türkçe yazılım terimleri sözlüğü
 [ ] Dosya sistemi komutları (listele, sil)
 [ ] Çoklu görev desteği
-[ ] x86 backend (gerçek donanım)
 [ ] VS Code sözdizimi desteği
 [ ] Tam Türkçe işletim sistemi
 Neden Zedin Assembly?
