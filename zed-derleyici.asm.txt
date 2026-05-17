@@ -1,0 +1,61 @@
+import struct
+
+# Komut ve Yazmaç Tablosu
+SOZLUK = {
+    "AKTAR": 0xA1, 
+    "FONK": 0xA2, 
+    "ZIPLA": 0xA3,
+    "DUR": 0xFF, 
+    "Y1": 0x01,
+    "Y2": 0x02
+}
+
+def derle(kaynak_dosya, cikti_dosya):
+    baytlar = bytearray()
+    metin_alani = bytearray()
+    
+    with open(kaynak_dosya, "r", encoding="utf-8") as f:
+        for satir in f:
+            # Yorumları temizle
+            satir = satir.split("//")[0].strip()
+            if not satir: continue
+            
+            # Eğer satır bir metin içeriyorsa ( "..." )
+            if '"' in satir:
+                metin = satir.split('"')[1]
+                # Metni belleğin ilerisine (0x9020 gibi) koyacağımız için burayı işaretle
+                metin_alani.extend(metin.encode('ascii') + b'\x00')
+                continue
+
+            # Gereksiz karakterleri temizle (virgül, parantez)
+            temiz_satir = satir.replace(",", " ").replace("(", " ").replace(")", " ")
+            parcalar = temiz_satir.split()
+            
+            for kelime in parcalar:
+                if kelime in SOZLUK:
+                    baytlar.append(SOZLUK[kelime])
+                elif kelime.startswith("0x"):
+                    # Hex sayıları işle (Örn: 0x90 -> 144)
+                    val = int(kelime, 16)
+                    # Eğer 2 baytlık bir adres ise (0x9000 gibi) parçalayarak ekle
+                    if val > 255:
+                        baytlar.append(val & 0xFF) # Alt bayt
+                        baytlar.append((val >> 8) & 0xFF) # Üst bayt
+                    else:
+                        baytlar.append(val)
+                else:
+                    try:
+                        baytlar.append(int(kelime))
+                    except:
+                        pass # Bilinmeyenleri geç
+
+    # Kodun sonuna metni ekle
+    while len(baytlar) < 32: # Metni sabit bir ofsete (0x9020) itelim
+        baytlar.append(0)
+        
+    final_bin = baytlar + metin_alani
+    with open(cikti_dosya, "wb") as f:
+        f.write(final_bin)
+    print(f"Başarıyla derlendi: {cikti_dosya} ({len(final_bin)} bayt)")
+
+derle("baslat.zed", "cekirdek.bin")

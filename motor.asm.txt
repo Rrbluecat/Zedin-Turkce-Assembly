@@ -1,0 +1,76 @@
+[org 0x7c00]
+
+ZED_KOD_ADRESI equ 0x9000
+YAZMACLAR_BAS  equ 0x8000
+
+start:
+    xor ax, ax
+    mov ds, ax
+    mov es, ax
+    ; Disk Okuma (Aynı kalıyor)
+    mov ah, 0x02
+    mov al, 10
+    mov ch, 0
+    mov dh, 0
+    mov cl, 2
+    mov bx, ZED_KOD_ADRESI
+    int 0x13
+    
+    mov si, ZED_KOD_ADRESI
+    jmp zedin_vm_islet
+
+zedin_vm_islet:
+    lodsb
+    or al, al
+    jz .bekle
+    
+    cmp al, 0xA1 ; AKTAR
+    je .komut_aktar
+    cmp al, 0xA2 ; FONK
+    je .komut_fonk
+    cmp al, 0xFF ; DUR
+    je .bekle
+    jmp zedin_vm_islet
+
+.komut_aktar:
+    lodsb ; Yazmac No
+    dec al
+    movzx bx, al
+    shl bx, 2
+    add bx, YAZMACLAR_BAS
+    lodsb ; Deger
+    mov [bx], al
+    jmp zedin_vm_islet
+
+.komut_fonk:
+    lodsb
+    cmp al, 0x01 ; GRAFIK_MOD_AC
+    je .f_grafik
+    cmp al, 0x04 ; METIN_YAZ (Y1'deki adresi ekrana bas)
+    je .f_metin_yaz
+    jmp zedin_vm_islet
+
+    .f_grafik:
+        mov ax, 0x0013
+        int 0x10
+        jmp zedin_vm_islet
+
+    .f_metin_yaz:
+        mov bx, YAZMACLAR_BAS
+        mov al, [bx]        ; Y1'den ofseti al (Örn: 0x20)
+        mov ah, [bx + 4]    ; Y2'den segmenti al (Örn: 0x90)
+        mov si, ax          ; SI artık tam olarak 0x9020'yi gösteriyor!
+        mov bl, 0x0F        ; Beyaz renk
+    .karakter_dongusu:
+        lodsb
+        or al, al
+        jz zedin_vm_islet
+        mov ah, 0x0E
+        int 0x10
+        jmp .karakter_dongusu
+
+.bekle:
+    jmp $
+
+times 510-($-$$) db 0
+dw 0xaa55
