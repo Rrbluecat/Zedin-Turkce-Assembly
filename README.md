@@ -1,5 +1,3 @@
----
-
 # Zedin Türkçe Assembly ve VM
 
 **Türkçe komut setli, bytecode VM'li, kendi assembler ve linker'ına sahip işletim sistemi dili**
